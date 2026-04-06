@@ -79,7 +79,7 @@ def find_dataset_root(search_dir: str) -> Path:
             if any(
                 f.suffix.lower() in SUPPORTED_EXTENSIONS
                 for f in (root_p / d).iterdir()
-                if (root_p / d / f.name if f.is_file() else root_p / d).is_dir() is False
+                if f.is_file()
             )
         ]
         if len(subdirs_with_images) >= 5:
@@ -87,6 +87,30 @@ def find_dataset_root(search_dir: str) -> Path:
     # Fallback
     return search_dir
 
+def split_segmented_originals(
+    class_map: Dict[str, List[Path]],
+    black_pixel_threshold: float = 0.08,
+    black_value_cutoff: int = 20,
+) -> Tuple[Dict[str, List[Path]], Dict[str, List[Path]]]:
+    """
+    Separate original images from pre-segmented (black-background) ones
+    using whole-image black pixel ratio. Border-strip detection was found
+    to over-filter classes with natural dark edges (corn, peach).
+    """
+    originals: Dict[str, List[Path]] = {}
+    segmented: Dict[str, List[Path]] = {}
+    for cls, paths in class_map.items():
+        orig, seg = [], []
+        for p in paths:
+            try:
+                arr = np.array(Image.open(p).convert("RGB"))
+                black_ratio = np.mean(np.all(arr < black_value_cutoff, axis=2))
+                (seg if black_ratio > black_pixel_threshold else orig).append(p)
+            except Exception:
+                orig.append(p)
+        originals[cls] = orig
+        segmented[cls] = seg
+    return originals, segmented
 
 def scan_dataset(dataset_root: str) -> Dict[str, List[Path]]:
     """
@@ -101,11 +125,20 @@ def scan_dataset(dataset_root: str) -> Dict[str, List[Path]]:
     -------
     dict[str, list[Path]]
     """
+
     root = Path(dataset_root)
     class_map: Dict[str, List[Path]] = {}
 
     for cls_dir in sorted(root.iterdir()):
         if not cls_dir.is_dir():
+            continue
+        # Skip meta-folders that are themselves dataset roots (nested structure)
+        sub_subdirs = [d for d in cls_dir.iterdir() if d.is_dir()]
+        direct_images = [
+            p for p in cls_dir.iterdir()
+            if p.is_file() and p.suffix.lower() in SUPPORTED_EXTENSIONS
+        ]
+        if sub_subdirs and not direct_images:
             continue
         images = [
             p for p in cls_dir.rglob("*")

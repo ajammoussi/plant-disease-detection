@@ -189,6 +189,9 @@ def find_low_quality_images(
                 continue
             try:
                 with Image.open(p) as img:
+                    if img.mode not in ("RGB", "RGBA"):
+                        bad.append((p, f"non-color mode: {img.mode}"))
+                        continue
                     w, h = img.size
                 if w < min_size[0] or h < min_size[1]:
                     bad.append((p, f"resolution too low ({w}×{h})"))
@@ -197,6 +200,27 @@ def find_low_quality_images(
         if bad:
             report[cls] = bad
     return report
+
+def remove_low_quality_images(
+    low_quality_report: Dict[str, List[Tuple[Path, str]]],
+    class_map: Dict[str, List[Path]],
+    dry_run: bool = True,
+) -> Dict[str, List[Path]]:
+    """
+    Remove low-quality images from class_map (and optionally disk).
+    Mirrors the API of remove_corrupt_images.
+    """
+    bad_set = {p for paths in low_quality_report.values() for p, _ in paths}
+    cleaned: Dict[str, List[Path]] = {}
+    for cls, paths in class_map.items():
+        cleaned[cls] = [p for p in paths if p not in bad_set]
+        if not dry_run:
+            for p in paths:
+                if p in bad_set and p.exists():
+                    p.unlink()
+    action = "Would remove" if dry_run else "Removed"
+    print(f"[cleaning] {action} {len(bad_set)} low-quality image(s).")
+    return cleaned
 
 
 # ── 4. Summary report ────────────────────────────────────────────────────────

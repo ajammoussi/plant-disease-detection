@@ -19,16 +19,17 @@ import matplotlib.gridspec as gridspec
 
 
 # ── Constants ──────────────────────────────────────────────────────────────
-DEFAULT_TARGET_SIZE: Tuple[int, int] = (224, 224)   # (width, height)
+DEFAULT_TARGET_SIZE: Tuple[int, int] = (256, 256)   # (width, height)
+DEFAULT_RESIZE_MODE: str = "crop"                   # aspect-ratio-safe default
 IMAGENET_MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
 IMAGENET_STD  = np.array([0.229, 0.224, 0.225], dtype=np.float32)
-
+MODEL_INPUT_SIZE: Tuple[int, int] = (224, 224)
 
 # ── 1. Resizing ──────────────────────────────────────────────────────────────
 def resize_image(
     img: np.ndarray,
     target_size: Tuple[int, int] = DEFAULT_TARGET_SIZE,
-    mode: str = "stretch",
+    mode: str = "crop",
     pad_color: Tuple[int, int, int] = (0, 0, 0),
 ) -> np.ndarray:
     """
@@ -102,8 +103,9 @@ def batch_resize(
                     out_dir = Path(output_dir) / cls
                     out_dir.mkdir(parents=True, exist_ok=True)
                     Image.fromarray(arr_r).save(out_dir / (p.stem + ".png"))
-            except Exception:
-                pass
+            except Exception as exc:
+                import warnings
+                warnings.warn(f"[batch_resize] Failed on {p}: {exc}")
         result[cls] = resized
     return result
 
@@ -126,8 +128,8 @@ def normalize_minmax(img: np.ndarray) -> np.ndarray:
 # ── 3. Image enhancement / filtering ────────────────────────────────────────
 def apply_clahe(
     img: np.ndarray,
-    clip_limit: float = 1.5,
-    tile_grid_size: Tuple[int, int] = (8, 8),
+    clip_limit: float = 2.0,
+    tile_grid_size: Tuple[int, int] = (4, 4),
 ) -> np.ndarray:
     """
     Apply CLAHE (Contrast Limited Adaptive Histogram Equalisation)
@@ -165,9 +167,9 @@ def apply_gaussian_denoise(img: np.ndarray, kernel_size: int = 3) -> np.ndarray:
 
 def apply_bilateral_denoise(
     img: np.ndarray,
-    d: int = 9,
-    sigma_color: float = 75,
-    sigma_space: float = 75,
+    d: int = 5,
+    sigma_color: float = 35,
+    sigma_space: float = 35,
 ) -> np.ndarray:
     """
     Edge-preserving bilateral filter — better for natural images.
@@ -177,14 +179,108 @@ def apply_bilateral_denoise(
     return cv2.cvtColor(filtered, cv2.COLOR_BGR2RGB)
 
 
-def full_enhancement_pipeline(img: np.ndarray) -> np.ndarray:
+def extract_mask_from_segmented(
+    segmented_img: np.ndarray,
+    black_threshold: int = 15,
+) -> np.ndarray:
     """
-    Standard pipeline applied in sequence:
-      1. Bilateral denoise
-      2. CLAHE contrast enhancement
+    Derive a binary foreground mask from a pre-segmented image
+    (black background, leaf in color).
+
+    Parameters
+    ----------
+    segmented_img : uint8 RGB array with black background
+    black_threshold : pixels with all channels below this are considered background
+
+    Returns
+    -------
+    uint8 binary mask (255 = foreground leaf, 0 = background)
     """
+    dark = np.all(segmented_img < black_threshold, axis=2)
+    mask = np.where(dark, 0, 255).astype(np.uint8)
+
+    # Morphological cleanup — fill small holes inside the leaf
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=2)
+    return mask
+
+
+def apply_background_removal(
+    img: np.ndarray,
+    mask: Optional[np.ndarray] = None,
+    bg_color: str = "blur",
+) -> np.ndarray:
+    """
+    Remove background from a leaf image using a precomputed mask or
+    HSV-based fallback if no mask is provided.
+
+    Parameters
+    ----------
+    img : uint8 RGB numpy array
+    mask : uint8 binary mask (255=leaf, 0=background). If None, falls back
+           to HSV color segmentation (no GrabCut).
+    bg_color : 'blur' | 'median' | 'white' | 'black'
+        How to fill the background region.
+        - 'blur'   : gaussian-blurred version of original (most natural)
+        - 'median' : flat median color of the image
+        - 'white'  : pure white
+        - 'black'  : pure black (avoid for CNNs — creates false edges)
+
+    Returns
+    -------
+    uint8 RGB numpy array
+    """
+    h, w = img.shape[:2]
+
+    if mask is None:
+        # Fallback: simple HSV color mask, no GrabCut
+        bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+        green_mask  = cv2.inRange(hsv, np.array([20, 15, 15]),  np.array([100, 255, 255]))
+        brown_mask  = cv2.inRange(hsv, np.array([0,  20, 20]),  np.array([20,  255, 200]))
+        yellow_mask = cv2.inRange(hsv, np.array([15, 30, 80]),  np.array([35,  255, 255]))
+        mask = cv2.bitwise_or(green_mask, cv2.bitwise_or(brown_mask, yellow_mask))
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=3)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN,  kernel, iterations=1)
+
+    # Build background fill
+    if bg_color == "blur":
+        background = cv2.GaussianBlur(img, (51, 51), 0)
+    elif bg_color == "median":
+        med = np.median(img.reshape(-1, 3), axis=0).astype(np.uint8)
+        background = np.full_like(img, med)
+    elif bg_color == "white":
+        background = np.full_like(img, 255)
+    else:  # black
+        background = np.zeros_like(img)
+
+    # Soft edge: erode mask slightly then blur for feathering
+    eroded    = cv2.erode(mask, np.ones((3, 3), np.uint8), iterations=1)
+    soft_mask = cv2.GaussianBlur(eroded.astype(np.float32), (9, 9), 0) / 255.0
+    soft_mask = soft_mask[:, :, np.newaxis]
+    result    = img * soft_mask + background * (1 - soft_mask)
+    return result.astype(np.uint8)
+
+def full_enhancement_pipeline(
+    img: np.ndarray,
+    segmented_img: Optional[np.ndarray] = None,
+    bg_color: str = "blur",
+) -> np.ndarray:
+    """
+    Correct pipeline order:
+      1. Bilateral denoise    — on real pixels only, before any synthetic fill
+      2. CLAHE                — adaptive contrast on real pixels only
+      3. Background removal   — synthetic fill pixels never go through steps 1-2
+    """
+    # Step 1 & 2: enhance real image content first
     img = apply_bilateral_denoise(img)
-    img = apply_clahe(img)
+    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    clip = 1.5 if gray.std() > 45 else 2.5
+    img = apply_clahe(img, clip_limit=clip)
+    # Step 3: background removal last — blurred fill stays unenhanced
+    mask = extract_mask_from_segmented(segmented_img) if segmented_img is not None else None
+    img = apply_background_removal(img, mask=mask, bg_color=bg_color)
     return img
 
 
@@ -219,7 +315,21 @@ def plot_before_after(
     for row, (imgs, label) in enumerate(zip([original_images, processed_images], row_labels)):
         for col, img in enumerate(imgs):
             ax = axes[row][col]
-            ax.imshow(img.astype(np.uint8))
+            # Convert float images (e.g. ImageNet-normalised or 0-1) back to uint8 for display
+            img_disp = img
+            if np.issubdtype(img_disp.dtype, np.floating):
+                vmin, vmax = float(img_disp.min()), float(img_disp.max())
+                if vmin >= 0.0 and vmax <= 1.0:
+                    img_disp = img_disp * 255.0
+                else:
+                    # Assume ImageNet normalisation — invert it for visualization
+                    img_disp = (img_disp * IMAGENET_STD.reshape(1, 1, 3)
+                                + IMAGENET_MEAN.reshape(1, 1, 3)) * 255.0
+                img_disp = np.clip(img_disp, 0, 255).astype(np.uint8)
+            else:
+                img_disp = img_disp.astype(np.uint8)
+
+            ax.imshow(img_disp)
             ax.set_xticks([])
             ax.set_yticks([])
             if titles and col < len(titles):
@@ -243,18 +353,20 @@ def plot_pipeline_stages(
     Show a single image through every preprocessing stage side-by-side.
     """
     img = img.astype(np.uint8)
-    resized   = resize_image(img, DEFAULT_TARGET_SIZE, mode="crop")
-    denoised  = apply_bilateral_denoise(resized)
-    clahe_img = apply_clahe(denoised)
+    resized    = resize_image(img, DEFAULT_TARGET_SIZE, mode="crop")
+    bg_removed = apply_background_removal(resized, bg_color="blur")
+    denoised   = apply_bilateral_denoise(bg_removed)
+    clahe_img  = apply_clahe(denoised)
 
     stages = [
-        (img,       "Original"),
-        (resized,   f"Resized\n{DEFAULT_TARGET_SIZE}"),
-        (denoised,  "Bilateral\nDenoise"),
-        (clahe_img, "CLAHE"),
+        (img,        "Original"),
+        (resized,    f"Resized\n{DEFAULT_TARGET_SIZE}"),
+        (bg_removed, "Background\nRemoval"),
+        (denoised,   "Bilateral\nDenoise"),
+        (clahe_img,  "CLAHE"),
     ]
 
-    fig, axes = plt.subplots(1, len(stages), figsize=figsize)
+    fig, axes = plt.subplots(1, len(stages), figsize=(22, 4))
     for ax, (stage_img, label) in zip(axes, stages):
         ax.imshow(stage_img)
         ax.set_title(label, fontsize=9, fontweight="bold")
@@ -282,7 +394,26 @@ def plot_histogram_comparison(
     colors = ["#e53935", "#43a047", "#1e88e5"]
 
     for row, (img, title) in enumerate([(original, "Before"), (processed, "After")]):
-        img_u8 = img.astype(np.uint8)
+        # Prepare image for histogram: convert floats back to uint8 where needed
+        img_u8 = img
+        if np.issubdtype(img_u8.dtype, np.floating):
+            vmin, vmax = float(img_u8.min()), float(img_u8.max())
+            if vmin >= 0.0 and vmax <= 1.0:
+                img_u8 = (img_u8 * 255.0)
+            else:
+                img_u8 = (img_u8 * IMAGENET_STD.reshape(1, 1, 3)
+                         + IMAGENET_MEAN.reshape(1, 1, 3)) * 255.0
+            img_u8 = np.clip(img_u8, 0, 255).astype(np.uint8)
+        else:
+            # Denormalize if float32 (imagenet-normalized) before plotting
+            if img.dtype != np.uint8:
+                img_u8 = np.clip(
+                    (img * np.array([0.229, 0.224, 0.225]) + np.array([0.485, 0.456, 0.406])) * 255,
+                    0, 255
+                ).astype(np.uint8)
+            else:
+                img_u8 = img.astype(np.uint8)
+
         for col, (ch, cname, color) in enumerate(zip(range(3), channel_names, colors)):
             ax = axes[row][col]
             ax.hist(img_u8[:, :, ch].ravel(), bins=64, color=color,

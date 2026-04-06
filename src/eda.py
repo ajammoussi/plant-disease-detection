@@ -17,7 +17,7 @@ import random
 
 # ── Palette helper ──────────────────────────────────────────────────────────
 def _class_palette(n: int):
-    cmap = plt.cm.get_cmap("tab20", n)
+    cmap = plt.colormaps["tab20"].resampled(n)
     return [cmap(i) for i in range(n)]
 
 
@@ -139,7 +139,10 @@ def plot_sample_grid(
         axes = [axes]
 
     for row, cls in enumerate(classes_to_show):
-        paths = rng.sample(class_map[cls], min(n_per_class, len(class_map[cls])))
+        available = class_map.get(cls, [])
+        if not available:
+            continue
+        paths = rng.sample(available, min(n_per_class, len(available)))
         for col in range(n_cols):
             ax = axes[row][col]
             if col < len(paths):
