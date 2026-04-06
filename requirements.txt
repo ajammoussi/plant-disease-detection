@@ -1,0 +1,12 @@
+# Plant Disease Detection — Data Preprocessing
+# Python >= 3.9
+
+numpy>=1.24
+matplotlib>=3.7
+Pillow>=10.0
+opencv-python>=4.8
+requests>=2.31
+scikit-image>=0.21
+jupyterlab>=4.0
+ipykernel>=6.0
+tqdm>=4.65
