@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader, random_split
 from torchvision import datasets, models, transforms
 from torchvision.models import ResNet50_Weights
 from tqdm import tqdm
+from torch.utils.tensorboard import SummaryWriter # Added TensorBoard import
 
 # Add project root to sys.path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent 
@@ -21,7 +22,13 @@ def main():
     # ---------------------------------------------------------
     PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
     MODEL_DIR = PROJECT_ROOT / "outputs" / "models"
+    LOG_DIR = PROJECT_ROOT / "outputs" / "logs" # TensorBoard log directory
+    
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+    
+    # Initialize TensorBoard SummaryWriter
+    writer = SummaryWriter(log_dir=str(LOG_DIR))
     
     # Hyperparameters
     BATCH_SIZE = 32
@@ -162,6 +169,10 @@ def main():
             
             print(f"{phase.capitalize()} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}\n")
             
+            # Write metrics to TensorBoard
+            writer.add_scalar(f'Loss/{phase}', epoch_loss, epoch)
+            writer.add_scalar(f'Accuracy/{phase}', epoch_acc, epoch)
+            
             # Deep copy the model if it's the best validation accuracy
             if phase == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
@@ -170,6 +181,9 @@ def main():
                 print(f"🌟 New best model saved to {best_model_path}!\n")
                 
     print(f"Training complete. Best Validation Accuracy: {best_acc:.4f}")
+    
+    # Close TensorBoard writer
+    writer.close()
 
 if __name__ == "__main__":
     main()
