@@ -20,7 +20,8 @@ def main():
     # ---------------------------------------------------------
     # 1. Configuration & Setup
     # ---------------------------------------------------------
-    PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
+    #PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
+    PROCESSED_DIR = PROJECT_ROOT / "data" / "raw" / "plantvillage dataset" / "color"
     MODEL_DIR = PROJECT_ROOT / "outputs" / "models"
     LOG_DIR = PROJECT_ROOT / "outputs" / "logs" # TensorBoard log directory
     
