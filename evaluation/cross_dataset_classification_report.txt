@@ -1,0 +1,102 @@
+================================================================================
+CROSS-DATASET EVALUATION REPORT
+PlantVillage Model Tested on PlantDoc Dataset
+================================================================================
+
+Overall Accuracy: 0.1961 (19.61%)
+
+Mean Prediction Confidence:
+  Mean: 0.7159
+  Std:  0.2460
+  Min:  0.1390
+  Max:  1.0000
+
+CLASS-WISE CLASSIFICATION REPORT:
+--------------------------------------------------------------------------------
+                                                    precision    recall  f1-score   support
+
+                                Apple___Apple_scab       0.20      0.11      0.14       244
+                                 Apple___Black_rot       0.00      0.00      0.00         0
+                          Apple___Cedar_apple_rust       0.00      0.00      0.00         0
+                                   Apple___healthy       0.00      0.00      0.00         0
+                               Blueberry___healthy       0.21      0.20      0.20       106
+          Cherry_(including_sour)___Powdery_mildew       0.00      0.00      0.00         0
+                 Cherry_(including_sour)___healthy       0.00      0.00      0.00         0
+Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot       0.37      0.50      0.43        64
+                       Corn_(maize)___Common_rust_       0.00      0.00      0.00         0
+               Corn_(maize)___Northern_Leaf_Blight       0.66      0.36      0.46       179
+                            Corn_(maize)___healthy       0.00      0.00      0.00         0
+                                 Grape___Black_rot       0.28      0.18      0.22        56
+                      Grape___Esca_(Black_Measles)       0.00      0.00      0.00         0
+        Grape___Leaf_blight_(Isariopsis_Leaf_Spot)       0.00      0.00      0.00         0
+                                   Grape___healthy       0.34      0.21      0.26        57
+          Orange___Haunglongbing_(Citrus_greening)       0.00      0.00      0.00         0
+                            Peach___Bacterial_spot       0.00      0.00      0.00         0
+                                   Peach___healthy       0.00      0.00      0.00       103
+                     Pepper,_bell___Bacterial_spot       0.22      0.27      0.24        62
+                            Pepper,_bell___healthy       0.40      0.32      0.36        53
+                             Potato___Early_blight       0.19      0.28      0.23       109
+                              Potato___Late_blight       0.43      0.09      0.15        97
+                                  Potato___healthy       0.00      0.00      0.00         0
+                               Raspberry___healthy       0.86      0.16      0.27       112
+                                 Soybean___healthy       0.50      0.05      0.10        57
+                           Squash___Powdery_mildew       0.38      0.45      0.41       124
+                          Strawberry___Leaf_scorch       0.06      0.13      0.08       135
+                              Strawberry___healthy       0.00      0.00      0.00         0
+                           Tomato___Bacterial_spot       0.17      0.01      0.02       101
+                             Tomato___Early_blight       0.19      0.33      0.24        79
+                              Tomato___Late_blight       0.19      0.39      0.26       101
+                                Tomato___Leaf_Mold       0.40      0.04      0.08       140
+                       Tomato___Septoria_leaf_spot       0.38      0.15      0.22       139
+     Tomato___Spider_mites Two-spotted_spider_mite       0.00      0.00      0.00         2
+                              Tomato___Target_Spot       0.00      0.00      0.00         0
+            Tomato___Tomato_Yellow_Leaf_Curl_Virus       0.36      0.17      0.23        70
+                      Tomato___Tomato_mosaic_virus       0.00      0.00      0.00        44
+                                  Tomato___healthy       0.00      0.00      0.00         0
+
+                                          accuracy                           0.20      2234
+                                         macro avg       0.18      0.12      0.12      2234
+                                      weighted avg       0.32      0.20      0.21      2234
+
+
+PER-CLASS PERFORMANCE DETAILS:
+--------------------------------------------------------------------------------
+                                              pv_class                                    pd_classes  accuracy  precision    recall        f1  support
+0                  Corn_(maize)___Northern_Leaf_Blight                              Corn leaf blight  0.357542   0.659794  0.357542  0.463768      179
+1   Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot                           Corn Gray leaf spot  0.500000   0.372093  0.500000  0.426667       64
+2                              Squash___Powdery_mildew                    Squash Powdery mildew leaf  0.451613   0.375839  0.451613  0.410256      124
+3                               Pepper,_bell___healthy                              Bell_pepper leaf  0.320755   0.404762  0.320755  0.357895       53
+4                                  Raspberry___healthy                                Raspberry leaf  0.160714   0.857143  0.160714  0.270677      112
+5                                      Grape___healthy                                    grape leaf  0.210526   0.342857  0.210526  0.260870       57
+6                                 Tomato___Late_blight                       Tomato leaf late blight  0.386139   0.191176  0.386139  0.255738      101
+7                        Pepper,_bell___Bacterial_spot                         Bell_pepper leaf spot  0.274194   0.220779  0.274194  0.244604       62
+8                                Tomato___Early_blight                      Tomato Early blight leaf  0.329114   0.192593  0.329114  0.242991       79
+9               Tomato___Tomato_Yellow_Leaf_Curl_Virus                      Tomato leaf yellow virus  0.171429   0.363636  0.171429  0.233010       70
+10                               Potato___Early_blight                      Potato leaf early blight  0.275229   0.193548  0.275229  0.227273      109
+11                                   Grape___Black_rot                          grape leaf black rot  0.178571   0.277778  0.178571  0.217391       56
+12                         Tomato___Septoria_leaf_spot                     Tomato Septoria leaf spot  0.151079   0.381818  0.151079  0.216495      139
+13                                 Blueberry___healthy                                Blueberry leaf  0.198113   0.205882  0.198113  0.201923      106
+14                                Potato___Late_blight                       Potato leaf late blight  0.092784   0.428571  0.092784  0.152542       97
+15                                  Apple___Apple_scab  Apple Scab Leaf, Apple leaf, Apple rust leaf  0.110656   0.195652  0.110656  0.141361      244
+16                                   Soybean___healthy                                 Soyabean leaf  0.052632   0.500000  0.052632  0.095238       57
+17                            Strawberry___Leaf_scorch                  Cherry leaf, Strawberry leaf  0.125926   0.062731  0.125926  0.083744      135
+18                                  Tomato___Leaf_Mold                 Tomato leaf, Tomato mold leaf  0.042857   0.400000  0.042857  0.077419      140
+19                             Tomato___Bacterial_spot                    Tomato leaf bacterial spot  0.009901   0.166667  0.009901  0.018692      101
+20                                   Apple___Black_rot                                           N/A  0.000000   0.000000  0.000000  0.000000        0
+21                            Apple___Cedar_apple_rust                                           N/A  0.000000   0.000000  0.000000  0.000000        0
+22                                     Apple___healthy                                           N/A  0.000000   0.000000  0.000000  0.000000        0
+23            Cherry_(including_sour)___Powdery_mildew                                           N/A  0.000000   0.000000  0.000000  0.000000        0
+24                   Cherry_(including_sour)___healthy                                           N/A  0.000000   0.000000  0.000000  0.000000        0
+25                         Corn_(maize)___Common_rust_                                           N/A  0.000000   0.000000  0.000000  0.000000        0
+26                              Corn_(maize)___healthy                                           N/A  0.000000   0.000000  0.000000  0.000000        0
+27                        Grape___Esca_(Black_Measles)                                           N/A  0.000000   0.000000  0.000000  0.000000        0
+28          Grape___Leaf_blight_(Isariopsis_Leaf_Spot)                                           N/A  0.000000   0.000000  0.000000  0.000000        0
+29            Orange___Haunglongbing_(Citrus_greening)                                           N/A  0.000000   0.000000  0.000000  0.000000        0
+30                              Peach___Bacterial_spot                                           N/A  0.000000   0.000000  0.000000  0.000000        0
+31                                     Peach___healthy                                    Peach leaf  0.000000   0.000000  0.000000  0.000000      103
+32                                    Potato___healthy                                           N/A  0.000000   0.000000  0.000000  0.000000        0
+33                                Strawberry___healthy                                           N/A  0.000000   0.000000  0.000000  0.000000        0
+34       Tomato___Spider_mites Two-spotted_spider_mite          Tomato two spotted spider mites leaf  0.000000   0.000000  0.000000  0.000000        2
+35                                Tomato___Target_Spot                                           N/A  0.000000   0.000000  0.000000  0.000000        0
+36                        Tomato___Tomato_mosaic_virus                      Tomato leaf mosaic virus  0.000000   0.000000  0.000000  0.000000       44
+37                                    Tomato___healthy                                           N/A  0.000000   0.000000  0.000000  0.000000        0

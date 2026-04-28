@@ -1,0 +1,39 @@
+pv_class,pd_classes,accuracy,precision,recall,f1,support
+Corn_(maize)___Northern_Leaf_Blight,Corn leaf blight,0.3575418994413408,0.6597938144329897,0.3575418994413408,0.463768115942029,179
+Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot,Corn Gray leaf spot,0.5,0.37209302325581395,0.5,0.4266666666666667,64
+Squash___Powdery_mildew,Squash Powdery mildew leaf,0.45161290322580644,0.37583892617449666,0.45161290322580644,0.41025641025641024,124
+"Pepper,_bell___healthy",Bell_pepper leaf,0.32075471698113206,0.40476190476190477,0.32075471698113206,0.35789473684210527,53
+Raspberry___healthy,Raspberry leaf,0.16071428571428573,0.8571428571428571,0.16071428571428573,0.2706766917293233,112
+Grape___healthy,grape leaf,0.21052631578947367,0.34285714285714286,0.21052631578947367,0.2608695652173913,57
+Tomato___Late_blight,Tomato leaf late blight,0.38613861386138615,0.19117647058823528,0.38613861386138615,0.25573770491803277,101
+"Pepper,_bell___Bacterial_spot",Bell_pepper leaf spot,0.27419354838709675,0.22077922077922077,0.27419354838709675,0.2446043165467626,62
+Tomato___Early_blight,Tomato Early blight leaf,0.3291139240506329,0.1925925925925926,0.3291139240506329,0.24299065420560748,79
+Tomato___Tomato_Yellow_Leaf_Curl_Virus,Tomato leaf yellow virus,0.17142857142857143,0.36363636363636365,0.17142857142857143,0.23300970873786409,70
+Potato___Early_blight,Potato leaf early blight,0.27522935779816515,0.1935483870967742,0.27522935779816515,0.22727272727272727,109
+Grape___Black_rot,grape leaf black rot,0.17857142857142858,0.2777777777777778,0.17857142857142858,0.21739130434782608,56
+Tomato___Septoria_leaf_spot,Tomato Septoria leaf spot,0.1510791366906475,0.38181818181818183,0.1510791366906475,0.21649484536082475,139
+Blueberry___healthy,Blueberry leaf,0.19811320754716982,0.20588235294117646,0.19811320754716982,0.20192307692307693,106
+Potato___Late_blight,Potato leaf late blight,0.09278350515463918,0.42857142857142855,0.09278350515463918,0.15254237288135594,97
+Apple___Apple_scab,"Apple Scab Leaf, Apple leaf, Apple rust leaf",0.11065573770491803,0.1956521739130435,0.11065573770491803,0.14136125654450263,244
+Soybean___healthy,Soyabean leaf,0.05263157894736842,0.5,0.05263157894736842,0.09523809523809523,57
+Strawberry___Leaf_scorch,"Cherry leaf, Strawberry leaf",0.1259259259259259,0.06273062730627306,0.1259259259259259,0.08374384236453201,135
+Tomato___Leaf_Mold,"Tomato leaf, Tomato mold leaf",0.04285714285714286,0.4,0.04285714285714286,0.07741935483870968,140
+Tomato___Bacterial_spot,Tomato leaf bacterial spot,0.009900990099009901,0.16666666666666666,0.009900990099009901,0.018691588785046728,101
+Apple___Black_rot,N/A,0.0,0.0,0.0,0.0,0
+Apple___Cedar_apple_rust,N/A,0.0,0.0,0.0,0.0,0
+Apple___healthy,N/A,0.0,0.0,0.0,0.0,0
+Cherry_(including_sour)___Powdery_mildew,N/A,0.0,0.0,0.0,0.0,0
+Cherry_(including_sour)___healthy,N/A,0.0,0.0,0.0,0.0,0
+Corn_(maize)___Common_rust_,N/A,0.0,0.0,0.0,0.0,0
+Corn_(maize)___healthy,N/A,0.0,0.0,0.0,0.0,0
+Grape___Esca_(Black_Measles),N/A,0.0,0.0,0.0,0.0,0
+Grape___Leaf_blight_(Isariopsis_Leaf_Spot),N/A,0.0,0.0,0.0,0.0,0
+Orange___Haunglongbing_(Citrus_greening),N/A,0.0,0.0,0.0,0.0,0
+Peach___Bacterial_spot,N/A,0.0,0.0,0.0,0.0,0
+Peach___healthy,Peach leaf,0.0,0.0,0.0,0.0,103
+Potato___healthy,N/A,0.0,0.0,0.0,0.0,0
+Strawberry___healthy,N/A,0.0,0.0,0.0,0.0,0
+Tomato___Spider_mites Two-spotted_spider_mite,Tomato two spotted spider mites leaf,0.0,0.0,0.0,0.0,2
+Tomato___Target_Spot,N/A,0.0,0.0,0.0,0.0,0
+Tomato___Tomato_mosaic_virus,Tomato leaf mosaic virus,0.0,0.0,0.0,0.0,44
+Tomato___healthy,N/A,0.0,0.0,0.0,0.0,0

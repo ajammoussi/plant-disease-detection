@@ -1,4 +1,8 @@
 .venv
 data/
-outputs/
 __pycache__/
+
+# Ignore the outputs directory
+outputs/*
+# But do not ignore the plots subdirectory
+!outputs/plots/
